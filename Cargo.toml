@@ -1,0 +1,62 @@
+[package]
+name = "passm3nage"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.70"
+description = "Security-first portable offline password manager"
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/yourusername/passm3nage"
+
+[dependencies]
+# Core cryptography - libsodium bindings
+sodiumoxide = "0.2.7"
+
+# Secret type safety
+secrecy = "0.8"
+zeroize = "1.7"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+hex = "0.4"
+
+# Terminal UI
+ratatui = "0.28"
+crossterm = "0.28"
+
+# Clipboard access (will use platform-specific implementation)
+clipboard = "0.5"
+
+# Error handling
+anyhow = "1.0"
+thiserror = "1.0"
+
+# CLI argument parsing
+clap = { version = "4.5", features = ["derive"] }
+
+# Logging (for debugging, disabled in security-critical paths)
+log = "0.4"
+env_logger = "0.11"
+
+[dev-dependencies]
+tempfile = "3.0"
+
+[lib]
+name = "passm3nage"
+path = "src/lib.rs"
+
+[[bin]]
+name = "passm3nage"
+path = "src/main.rs"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = false  # Keep symbols for debugging
+panic = "abort"  # Abort on panic (no unwinding)
+
+[profile.dev]
+opt-level = 0
+debug = true

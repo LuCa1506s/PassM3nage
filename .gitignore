@@ -1,0 +1,18 @@
+.git/
+target/
+Cargo.lock
+*.swp
+*.swo
+*~
+.DS_Store
+*.tmp
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# OS
+Thumbs.db
+vault.json
+tech.json

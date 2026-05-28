@@ -1,0 +1,1 @@
+//! Lock screen - TUI placeholder
