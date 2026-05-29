@@ -1,5 +1,9 @@
 .git/
 target/
+dist/
+*.exe
+*.zip
+*.tar.gz
 Cargo.lock
 *.swp
 *.swo

@@ -1,11 +1,86 @@
 # PassM3nage
 
-**PassM3nage** is a portable, offline, terminal-based password manager written in Rust.
+**PassM3nage** is a portable, offline, terminal-based password manager built for local use.
 
-It is built for people who want a small personal vault they can run locally, inspect, carry on a USB drive, and use without cloud sync, browser extensions, telemetry, or background services.
+No cloud, no telemetry, no network services, and no background daemons.
 
+## Download
+
+Get the latest release assets from GitHub Releases:
+
+- Windows x64: `passm3nage-windows-x64.zip`
+- Linux x64: `passm3nage-linux-x64.tar.gz`
+- macOS Intel: `passm3nage-macos-intel.tar.gz`
+- macOS Apple Silicon: `passm3nage-macos-arm.tar.gz`
+
+Unpack the archive and run the executable:
+
+- Windows: `passm3nage.exe`
+- Linux/macOS: `./passm3nage`
+
+Show version:
+
+```bash
+passm3nage --version
+```
+
+Show help:
+
+```bash
+passm3nage --help
+```
 
 ## Highlights
+
+## Eseguire il programma (per Sistema Operativo)
+
+### Windows
+
+- Estrai `passm3nage-windows-x64.zip` con Esplora risorse.
+- Esegui con un doppio click su `passm3nage.exe` oppure apri PowerShell nella cartella e lancia:
+
+```powershell
+.\passm3nage.exe
+```
+
+### Linux
+
+- Estrai l'archivio `passm3nage-linux-x64.tar.gz`:
+
+```bash
+tar -xzf passm3nage-linux-x64.tar.gz
+```
+
+- Rendi eseguibile il binario (se necessario) e avvialo:
+
+```bash
+chmod +x passm3nage
+./passm3nage
+```
+
+### macOS (Intel / Apple Silicon)
+
+- Estrai l'archivio corrispondente (`passm3nage-macos-intel.tar.gz` o `passm3nage-macos-arm.tar.gz`):
+
+```bash
+tar -xzf passm3nage-macos-intel.tar.gz
+# oppure per ARM: tar -xzf passm3nage-macos-arm.tar.gz
+```
+
+- Rendi eseguibile e avvia:
+
+```bash
+chmod +x passm3nage
+./passm3nage
+```
+
+- Nota (Gatekeeper): se macOS blocca l'esecuzione, apri Finder, Ctrl+clic sull'app e scegli "Apri" per autorizzare. In alternativa, da Terminale puoi rimuovere la quarantine così:
+
+```bash
+xattr -d com.apple.quarantine ./passm3nage
+```
+
+Queste istruzioni presuppongono che tu abbia scaricato e decompresso l'archivio nella cartella in cui vuoi eseguire l'applicazione.
 
 - **Offline by design**: no cloud, no networking, no telemetry.
 - **Portable**: runs as a local terminal app and stores vault files beside the executable.
@@ -33,15 +108,17 @@ PassM3nage currently supports:
 - Restoring an encrypted backup into `vault.json`.
 - Showing a runtime status bar with saved password count and `OK`/`ERROR` state.
 
-## Quick Start
+## Build from source
 
-Clone or open the project, then build it:
+If you want to build PassM3nage from source, first install Rust and Cargo.
+
+Then build the release binary:
 
 ```bash
 cargo build --release
 ```
 
-Run the app:
+Run the app locally:
 
 ```bash
 cargo run

@@ -30,6 +30,7 @@ use ratatui::style::{Color, Modifier, Style};
 use ratatui::widgets::{Block, Borders, Clear, List, ListItem, Paragraph};
 use ratatui::Terminal;
 use serde::{Deserialize, Serialize};
+use std::env;
 use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
@@ -357,7 +358,10 @@ impl AppState {
             self.backup_message = format!("Backup copied to {}", vault_destination.display());
             self.set_status_ok();
         } else if vault_result.is_ok() {
-            self.backup_message = format!("Vault backup copied to {} (tech.json missing)", vault_destination.display());
+            self.backup_message = format!(
+                "Vault backup copied to {} (tech.json missing)",
+                vault_destination.display()
+            );
             self.set_status_ok();
         } else {
             self.backup_message = "Could not copy vault.json".to_string();
@@ -795,9 +799,42 @@ fn decrypt_stored_entries(
     Ok(decrypted)
 }
 
+fn print_help() {
+    println!("Usage:");
+    println!("passm3nage");
+    println!("");
+    println!("Options:");
+    println!("--help");
+    println!("--version");
+}
+
+fn print_version() {
+    println!("PassM3nage v{}", env!("CARGO_PKG_VERSION"));
+}
+
 fn main() {
+    let mut args = env::args().skip(1);
+    if let Some(arg) = args.next() {
+        match arg.as_str() {
+            "--help" | "-h" => {
+                print_help();
+                return;
+            }
+            "--version" | "-V" => {
+                print_version();
+                return;
+            }
+            unknown => {
+                eprintln!("Unknown option: {}", unknown);
+                print_help();
+                std::process::exit(1);
+            }
+        }
+    }
+
     if let Err(err) = run() {
         eprintln!("Application error: {}", err);
+        std::process::exit(1);
     }
 }
 
@@ -1118,7 +1155,7 @@ fn draw_upload_backup(f: &mut ratatui::Frame, state: &AppState) {
         .block(
             Block::default()
                 .borders(Borders::ALL)
-                .title("Vault backup file path")
+                .title("Vault backup file path"),
         );
     let help = Paragraph::new(format!(
         "{}\nEnter: restore vault.backup.json (tech.backup.json will also be restored if present) | Esc: menu",

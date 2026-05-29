@@ -1,0 +1,134 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    name: Build and package
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            archive: passm3nage-windows-x64.zip
+            binary: passm3nage.exe
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+            archive: passm3nage-linux-x64.tar.gz
+            binary: passm3nage
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            archive: passm3nage-macos-intel.tar.gz
+            binary: passm3nage
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            archive: passm3nage-macos-arm.tar.gz
+            binary: passm3nage
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Add target
+        run: rustup target add ${{ matrix.target }}
+
+      - name: Install musl tools
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y musl-tools
+
+      - name: Build release binary
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Strip binary
+        if: runner.os != 'Windows'
+        run: strip target/${{ matrix.target }}/release/${{ matrix.binary }}
+
+      - name: Package release archive
+        run: |
+          rm -rf dist
+          mkdir -p dist
+          cp README.md LICENSE dist/
+          cp target/${{ matrix.target }}/release/${{ matrix.binary }} dist/
+          chmod +x dist/${{ matrix.binary }}
+          tar -czf ${{ matrix.archive }} -C dist .
+        shell: bash
+        if: runner.os != 'Windows'
+
+      - name: Package Windows archive
+        if: runner.os == 'Windows'
+        run: |
+          Remove-Item -Recurse -Force dist -ErrorAction Ignore
+          New-Item -ItemType Directory dist | Out-Null
+          Copy-Item README.md LICENSE dist
+          Copy-Item target/${{ matrix.target }}/release/${{ matrix.binary }} dist
+          Set-Location dist
+          Compress-Archive -Path * -DestinationPath ../${{ matrix.archive }} -Force
+        shell: pwsh
+
+      - name: Upload archive artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.archive }}
+          path: ${{ matrix.archive }}
+
+  release:
+    name: Publish GitHub Release
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download Windows archive
+        uses: actions/download-artifact@v4
+        with:
+          name: passm3nage-windows-x64.zip
+          path: dist/artifacts
+
+      - name: Download Linux archive
+        uses: actions/download-artifact@v4
+        with:
+          name: passm3nage-linux-x64.tar.gz
+          path: dist/artifacts
+
+      - name: Download macOS Intel archive
+        uses: actions/download-artifact@v4
+        with:
+          name: passm3nage-macos-intel.tar.gz
+          path: dist/artifacts
+
+      - name: Download macOS ARM archive
+        uses: actions/download-artifact@v4
+        with:
+          name: passm3nage-macos-arm.tar.gz
+          path: dist/artifacts
+
+      - name: Generate SHA256 checksums
+        run: |
+          mkdir -p dist/root
+          find dist/artifacts -type f \( -name '*.zip' -o -name '*.tar.gz' \) -exec mv -t dist/root -- {} +
+          mv dist/root/* dist/
+          rm -rf dist/artifacts dist/root
+          cd dist
+          sha256sum *.zip *.tar.gz > SHA256SUMS.txt
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: "PassM3nage ${{ github.ref_name }}"
+          tag_name: ${{ github.ref_name }}
+          files: dist/*.zip dist/*.tar.gz dist/SHA256SUMS.txt
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
